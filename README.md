@@ -86,4 +86,5 @@
     ```
 
 ## References
-- https://rotemtam.com/2021/03/22/creating-a-protoc-plugin-to-gen-go-code/
+1. https://rotemtam.com/2021/03/22/creating-a-protoc-plugin-to-gen-go-code/
+1. https://pkg.go.dev/google.golang.org/protobuf/compiler/protogen
