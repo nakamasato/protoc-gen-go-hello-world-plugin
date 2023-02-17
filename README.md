@@ -88,3 +88,7 @@
 ## References
 1. https://rotemtam.com/2021/03/22/creating-a-protoc-plugin-to-gen-go-code/
 1. https://pkg.go.dev/google.golang.org/protobuf/compiler/protogen
+1. https://qiita.com/yugui/items/160737021d25d761b353
+1. https://qiita.com/yugui/items/87d00d77dee159e74886
+1. https://qiita.com/yugui/items/29adefab34f7f1a3c3c6
+1. https://qiita.com/yugui/items/678a7abd86906270b5c2
