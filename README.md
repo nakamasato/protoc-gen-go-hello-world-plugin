@@ -2,7 +2,9 @@
 
 > A plugin is just a program that reads a CodeGeneratorRequest from stdin and writes a CodeGeneratorResponse to stdout.
 
-## Generate Go code from a proto file with existing plugin `protoc-gen-go`
+From [compiler plugins](https://developers.google.com/protocol-buffers/docs/reference/other#plugins)
+
+## 0. Generate Go code from a proto file with existing plugin `protoc-gen-go`
 
 1. Prepare `example/example.proto`
 1. Run `protoc` with `--<plugin>_out`
@@ -13,12 +15,15 @@
 
     this commands generates Go codes in `example/example.pb.go` file.
 
-## Create own plugin `protoc-gen-go-hello-world`
+
+[protoc-gen-go](https://github.com/golang/protobuf/tree/master/protoc-gen-go) uses [protogen](https://pkg.go.dev/google.golang.org/protobuf/compiler/protogen) package.
+
+## 1. Create your own plugin `protoc-go-hello-world-plugin` with [protogen](https://pkg.go.dev/google.golang.org/protobuf/compiler/protogen)
 
 1. Init module
 
     ```
-    go mod init protoc-sample-plugin
+    go mod init protoc-go-hello-world-plugin
     go mod tidy
     ```
 
@@ -62,6 +67,61 @@
     }
     ```
 
+    `generateFile` Arguments:
+
+    1. `protogen.Plugin`
+        ```go
+        type Plugin struct {
+            // Request is the CodeGeneratorRequest provided by protoc.
+            Request *pluginpb.CodeGeneratorRequest
+
+            // Files is the set of files to generate and everything they import.
+            // Files appear in topological order, so each file appears before any
+            // file that imports it.
+            Files       []*File
+            FilesByPath map[string]*File
+
+            // SupportedFeatures is the set of protobuf language features supported by
+            // this generator plugin. See the documentation for
+            // google.protobuf.CodeGeneratorResponse.supported_features for details.
+            SupportedFeatures uint64
+            // contains filtered or unexported fields
+        }
+        ```
+    1. `protogen.File`
+        ```go
+        type File struct {
+            Desc  protoreflect.FileDescriptor
+            Proto *descriptorpb.FileDescriptorProto
+
+            GoDescriptorIdent GoIdent       // name of Go variable for the file descriptor
+            GoPackageName     GoPackageName // name of this file's Go package
+            GoImportPath      GoImportPath  // import path of this file's Go package
+
+            Enums      []*Enum      // top-level enum declarations
+            Messages   []*Message   // top-level message declarations
+            Extensions []*Extension // top-level extension declarations
+            Services   []*Service   // top-level service declarations
+
+            Generate bool // true if we should generate code for this file
+
+            // GeneratedFilenamePrefix is used to construct filenames for generated
+            // files associated with this source file.
+            //
+            // For example, the source file "dir/foo.proto" might have a filename prefix
+            // of "dir/foo". Appending ".pb.go" produces an output file of "dir/foo.pb.go".
+            GeneratedFilenamePrefix string
+            // contains filtered or unexported fields
+        }
+        ```
+
+    Returned value:
+    1. `GeneratedFile`
+
+    Process:
+    1. [GeneratedFile.P](https://pkg.go.dev/google.golang.org/protobuf@v1.28.0/compiler/protogen#GeneratedFile.P): P prints a line to the generated output. It converts each parameter to a string following the same rules as fmt.Print. It never inserts spaces between parameters.
+
+
 1. Install the package.
 
     ```
@@ -86,4 +146,8 @@
     ```
 
 ## References
-- https://rotemtam.com/2021/03/22/creating-a-protoc-plugin-to-gen-go-code/
+- [Creating a protoc plugin to generate Go code with protogen](https://rotemtam.com/2021/03/22/creating-a-protoc-plugin-to-gen-go-code/)
+- [protogen](https://pkg.go.dev/google.golang.org/protobuf/compiler/protogen)
+- [Protocol Buffers - Other Languages](https://developers.google.com/protocol-buffers/docs/reference/other)
+- [protoc-gen-go (Go package)](https://pkg.go.dev/github.com/golang/protobuf/protoc-gen-go)
+- [protoc-gen-go (Source code)](https://github.com/golang/protobuf/tree/master/protoc-gen-go)
